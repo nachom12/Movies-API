@@ -1,10 +1,11 @@
 const e = require('express');
-const fs = require('fs')
-
-var BreakException = {}
+const fs = require('fs');
+const TokensService = require('../services/tokens.js');
 
 class UsersService {
-  constructor() { }
+  constructor() {
+    this.tokensService = new TokensService();
+  }
 
   async getUsers() {
     try {
@@ -18,25 +19,44 @@ class UsersService {
 
   async newUser({ user }) {
     try {
-      const {name, username, password} = user;
+      const { name, username, password } = user;
       const users = await this.getUsers();
-      console.log(users);
       users.forEach(user => {
         if (user.username === username) {
           throw Error('That UserName has been taken');
         }
       });
       users.push(user);
-      console.log(users);
       const usersText = JSON.stringify(users);
       fs.truncateSync('users.txt');
-      fs.writeFile('users.txt', usersText, function (err){
-        if (err) throw Error('Error writing users.txt')
-      }); 
+      fs.writeFile('users.txt', usersText, function (err) {
+        if (err) throw Error('Error writing users.txt');
+      });
     } catch (err) {
-      console.log(err)        
+      throw err;
+    }
+  }
+
+  async authenticateUser({ user }) {
+    try {
+      const registeredUsers = await this.getUsers();
+      const registeredUser = registeredUsers.find(registeredUser => {
+        return registeredUser.username === user.username
+      });
+      if (registeredUser != null) {
+        if (user.password === registeredUser.password) {
+          const token = this.tokensService.retrieveToken();
+          return { registeredUser, token};
+        } else {
+          throw Error('Incorrect password');
+        }
+      } else {
+        throw Error('User not registered')
+      }
+    } catch (err) {
+      throw err;
     }
   }
 }
 
-module.exports = UsersService
+module.exports = UsersService;
