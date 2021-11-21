@@ -46,7 +46,7 @@ class UsersService {
       if (registeredUser != null) {
         if (user.password === registeredUser.password) {
           const token = this.tokensService.retrieveToken();
-          return { registeredUser, token};
+          return { registeredUser, token };
         } else {
           throw Error('Incorrect password');
         }
@@ -57,6 +57,11 @@ class UsersService {
       throw err;
     }
   }
+
+  async logoutUser(token) {
+    return this.tokensService.checkToken(token);
+  }
+
 }
 
 module.exports = UsersService;

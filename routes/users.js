@@ -30,9 +30,9 @@ function users(app) {
   });
 
   router.post('/login', async function (req, res, next) {
-    const { user } = req.body      
+    const { user } = req.body
     try {
-      const {registeredUser, token} = await usersService.authenticateUser({ user });
+      const { registeredUser, token } = await usersService.authenticateUser({ user });
       res.set('Authorization', token);
       res.status(200).json({
         message: `${registeredUser.name} is authenticated`
@@ -42,6 +42,21 @@ function users(app) {
       res.status(400).json({
         error: `${err.message}`
       });
+    }
+  });
+
+  router.post('/logout', async function (req, res, next) {
+    const { authorization } = req.headers
+    try {
+      await usersService.logoutUser(authorization);
+      res.status(200).json({
+        message: `Log out success`
+      });
+    } catch (err) {
+      next(err);
+      res.status(400).json({
+        error: `${err.message}`
+      })
     }
   });
 }

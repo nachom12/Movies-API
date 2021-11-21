@@ -1,26 +1,41 @@
 const fs = require('fs');
+const TOKEN_MAX_VALUE = 90000;
+const TOKEN_MIN_VALUE = 1;
 
 class TokensService {
-  constructor() {}
+  constructor() { }
 
   createToken() {
-    return Math.floor(Math.random() * (90000 - 1)) + min;
+    return Math.floor(Math.random() * (TOKEN_MAX_VALUE - 1)) + TOKEN_MIN_VALUE;
   }
 
-  updateToken(){
+  updateToken() {
     const newToken = this.createToken();
-    fs.truncateSync('tokens.txt');
-    fs.writeFile('tokens.txt', newToken, function (err) {
-      if (err) throw Error('Error writing tokens.txt');
+    fs.truncateSync('token.txt');
+    fs.writeFile('token.txt', newToken, function (err) {
+      if (err) throw Error('Error writing token.txt');
     });
   }
 
-  retrieveToken(){
-    try{
+  retrieveToken() {
+    try {
       const token = fs.readFileSync('token.txt');
       const stringToken = token.toString();
       return stringToken;
-    } catch(err) {
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  checkToken(token) {
+    try {
+      if (token == this.retrieveToken()) {
+        this.updateToken();
+        return true;
+      } else {
+        throw Error('Incorrect authorization token');
+      }
+    } catch (err) {
       throw err;
     }
   }
