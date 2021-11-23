@@ -10,17 +10,31 @@ class TokensService {
   }
 
   updateToken() {
-    const newToken = this.createToken();
+    let tokenTxt = fs.readFileSync('token.txt');
+    let tokenObj = JSON.parse(tokenTxt);
+    tokenObj.token = this.createToken();
     fs.truncateSync('token.txt');
-    fs.writeFile('token.txt', newToken, function (err) {
+    fs.writeFile('token.txt', JSON.stringify(tokenObj), function (err) {
+      if (err) throw Error('Error writing token.txt');
+    });
+  }
+
+  updateUser({ user }) {
+    let tokenTxt = fs.readFileSync('token.txt');
+    let tokenObj = JSON.parse(tokenTxt);
+    tokenObj.currentUser = user.username;
+    fs.truncateSync('token.txt');
+    fs.writeFile('token.txt', JSON.stringify(tokenObj), function (err) {
       if (err) throw Error('Error writing token.txt');
     });
   }
 
   retrieveToken() {
     try {
-      const token = fs.readFileSync('token.txt');
-      const stringToken = token.toString();
+      const tokenData = fs.readFileSync('token.txt');
+      let tokenDataObject = JSON.parse(tokenData);
+      const stringToken = tokenDataObject.token.toString();
+      // tokenDataObject.currentUser = user.username;
       return stringToken;
     } catch (err) {
       throw err;
@@ -30,7 +44,6 @@ class TokensService {
   checkToken(token) {
     try {
       if (token == this.retrieveToken()) {
-        this.updateToken();
         return true;
       } else {
         throw Error('Incorrect authorization token');

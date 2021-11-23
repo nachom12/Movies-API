@@ -10,7 +10,7 @@ function movies(app) {
   router.get('/:id', async function (req, res, next) {
     const { id } = req.params;
     try {
-      const movies = await moviesService.getMoviesOfKeyword(1721);
+      const movies = await moviesService.getMoviesOfKeyword(id);
       res.status(200).json({
         movies
       });

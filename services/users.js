@@ -45,7 +45,8 @@ class UsersService {
       });
       if (registeredUser != null) {
         if (user.password === registeredUser.password) {
-          const token = this.tokensService.retrieveToken();
+          const token = this.tokensService.retrieveToken({ user });
+          this.tokensService.updateUser({ user })
           return { registeredUser, token };
         } else {
           throw Error('Incorrect password');
@@ -58,8 +59,14 @@ class UsersService {
     }
   }
 
-  async logoutUser(token) {
-    return this.tokensService.checkToken(token);
+  async logoutUser(token, user) {
+    if (this.tokensService.checkToken(token)) {
+      // TODO: set null username in token.txt
+      this.tokensService.updateToken();
+      return true;
+    } else {
+      return false;
+    }
   }
 
 }
