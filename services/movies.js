@@ -35,12 +35,18 @@ class MoviesService {
 
   async getMoviesByKeyword(keyword) {
     try {
+      let movies = []
       const { data: { results } } = await axios.get(`${API_URL}/search/keyword?api_key=${API_KEY}&query=${keyword}`);
-      let movies = await Promise.all(results.map(async (keyword) => {
+      let moviesByKeyword = await Promise.all(results.map(async (keyword) => {
         const moviesOfKeyword = await this.getMoviesOfKeyword(keyword.id);
         return { keyword, moviesOfKeyword }
       }));
-      return movies;
+      moviesByKeyword.map( data => {
+        data.moviesOfKeyword.map(movie => {
+          movies.push(movie);
+        });
+      });
+      return movies.sort((a, b) => b.suggestionScore - a.suggestionScore)
     } catch (err) {
       throw err;
     }

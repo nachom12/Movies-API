@@ -12,7 +12,6 @@ class UsersService {
       const data = fs.readFileSync('users.txt');
       return JSON.parse(data);
     } catch (err) {
-      console.log(err);
       return 'error'
     }
   }
@@ -61,7 +60,6 @@ class UsersService {
 
   async logoutUser(token, user) {
     if (this.tokensService.checkToken(token)) {
-      // TODO: set null username in token.txt
       this.tokensService.updateToken();
       return true;
     } else {
