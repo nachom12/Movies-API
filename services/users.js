@@ -30,9 +30,7 @@ class UsersService {
       users.push(user);
       const usersText = JSON.stringify(users);
       fs.truncateSync('users.txt');
-      fs.writeFile('users.txt', usersText, function (err) {
-        if (err) throw Error('Error writing users.txt');
-      });
+      fs.writeFileSync('users.txt', usersText);
     } catch (err) {
       throw err;
     }
@@ -95,7 +93,7 @@ class UsersService {
         favourites.push(data);
         const newFavouritesTXT = JSON.stringify(favourites);
         fs.truncateSync('favourites.txt');
-        fs.writeFileSync('favourites.txt', newFavouritesTXT);
+        fs.writeFileSyncSync('favourites.txt', newFavouritesTXT);
         return true;
       } else {
         return false;
@@ -104,8 +102,8 @@ class UsersService {
       throw err;
     }
   }
-  
-  
+
+
   isMovieAlreadyAFavourite(movie, username) {
     const favouritesTXT = fs.readFileSync('favourites.txt');
     const favourites = JSON.parse(favouritesTXT);
@@ -116,17 +114,17 @@ class UsersService {
       return true;
     }
   }
-  
+
   async getUsersFavourites() {
     const username = await this.getCurrentUser();
     const favouritesTXT = fs.readFileSync('favourites.txt');
     const userFavourites = JSON.parse(favouritesTXT).filter(favouriteData => favouriteData.username == username);
-    const userFavouriteMovies = userFavourites.map( favourite => {
+    const userFavouriteMovies = userFavourites.map(favourite => {
       favourite.suggestionForTodayScore = this.moviesService.calculateSuggestionScore();
-      const {movie , ...rest} = favourite;
+      const { movie, ...rest } = favourite;
       return movie;
-    }); 
-    return userFavouriteMovies.sort((a,b) => b.suggestionForTodayScore - a.suggestionForTodayScore);
+    });
+    return userFavouriteMovies.sort((a, b) => b.suggestionForTodayScore - a.suggestionForTodayScore);
   }
 
 }

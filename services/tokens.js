@@ -14,9 +14,7 @@ class TokensService {
     let tokenObj = JSON.parse(tokenTxt);
     tokenObj.token = this.createToken();
     fs.truncateSync('token.txt');
-    fs.writeFile('token.txt', JSON.stringify(tokenObj), function (err) {
-      if (err) throw Error('Error writing token.txt');
-    });
+    fs.writeFileSync('token.txt', JSON.stringify(tokenObj));
   }
 
   updateUser({ user }) {
@@ -24,9 +22,7 @@ class TokensService {
     let tokenObj = JSON.parse(tokenTxt);
     tokenObj.currentUser = user.username;
     fs.truncateSync('token.txt');
-    fs.writeFile('token.txt', JSON.stringify(tokenObj), function (err) {
-      if (err) throw Error('Error writing token.txt');
-    });
+    fs.writeFileSync('token.txt', JSON.stringify(tokenObj));
   }
 
   retrieveToken() {
