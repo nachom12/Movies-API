@@ -104,7 +104,8 @@ class UsersService {
       throw err;
     }
   }
-
+  
+  
   isMovieAlreadyAFavourite(movie, username) {
     const favouritesTXT = fs.readFileSync('favourites.txt');
     const favourites = JSON.parse(favouritesTXT);
@@ -115,6 +116,19 @@ class UsersService {
       return true;
     }
   }
+  
+  async getUsersFavourites() {
+    const username = await this.getCurrentUser();
+    const favouritesTXT = fs.readFileSync('favourites.txt');
+    const userFavourites = JSON.parse(favouritesTXT).filter(favouriteData => favouriteData.username == username);
+    const userFavouriteMovies = userFavourites.map( favourite => {
+      favourite.suggestionForTodayScore = this.moviesService.calculateSuggestionScore();
+      const {movie , ...rest} = favourite;
+      return movie;
+    }); 
+    return userFavouriteMovies.sort((a,b) => b.suggestionForTodayScore - a.suggestionForTodayScore);
+  }
+
 }
 
 module.exports = UsersService;
