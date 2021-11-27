@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { response } = require('express');
 const url = require('url');
 const TokensService = require('../services/tokens.js');
 
@@ -13,10 +14,11 @@ class MoviesService {
     return Math.floor(Math.random() * (99 - 1));
   }
 
-  async getMovie(id) {
+  async getMovie(movieId) {
     try {
-      const response = await axios.get(`${API_URL}/movie/${id}?api_key=${API_KEY}`);
-      return response.data;
+      const { data } = await axios.get(`${API_URL}/movie/${movieId}?api_key=${API_KEY}`);
+      const { original_title, genres, id, popularity } = data;
+      return {original_title, genres,id, popularity};
     } catch (err) {
       throw err;
     }
@@ -41,7 +43,7 @@ class MoviesService {
         const moviesOfKeyword = await this.getMoviesOfKeyword(keyword.id);
         return { keyword, moviesOfKeyword }
       }));
-      moviesByKeyword.map( data => {
+      moviesByKeyword.map(data => {
         data.moviesOfKeyword.map(movie => {
           movies.push(movie);
         });
@@ -51,7 +53,6 @@ class MoviesService {
       throw err;
     }
   }
-
 }
 
 module.exports = MoviesService;

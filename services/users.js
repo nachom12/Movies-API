@@ -1,10 +1,12 @@
 const e = require('express');
 const fs = require('fs');
 const TokensService = require('../services/tokens.js');
+const MoviesService = require('./movies.js');
 
 class UsersService {
   constructor() {
     this.tokensService = new TokensService();
+    this.moviesService = new MoviesService();
   }
 
   async getUsers() {
@@ -67,6 +69,52 @@ class UsersService {
     }
   }
 
+  async getCurrentUser() {
+    const data = fs.readFileSync('token.txt');
+    const { currentUser } = JSON.parse(data);
+    return currentUser;
+  }
+
+  async addFavouriteMovie(movieId) {
+    try {
+      const username = await this.getCurrentUser();
+      const movie = await this.moviesService.getMovie(movieId);
+      let favouriteData = { username, movie };
+      const result = this.saveFavouriteMovie(favouriteData)
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async saveFavouriteMovie(data) {
+    try {
+      const favouritesTXT = fs.readFileSync('favourites.txt');
+      const favourites = JSON.parse(favouritesTXT);
+      if (!this.isMovieAlreadyAFavourite(data.movie, data.username)) {
+        favourites.push(data);
+        const newFavouritesTXT = JSON.stringify(favourites);
+        fs.truncateSync('favourites.txt');
+        fs.writeFileSync('favourites.txt', newFavouritesTXT);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  isMovieAlreadyAFavourite(movie, username) {
+    const favouritesTXT = fs.readFileSync('favourites.txt');
+    const favourites = JSON.parse(favouritesTXT);
+    const userFavourites = favourites.filter(favouriteData => (favouriteData.username == username && favouriteData.movie.id == movie.id))
+    if (!userFavourites.length) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 }
 
 module.exports = UsersService;

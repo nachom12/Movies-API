@@ -41,7 +41,7 @@ class TokensService {
     }
   }
 
-  checkToken(token) {
+  async checkToken(token) {
     try {
       if (token == this.retrieveToken()) {
         return true;
