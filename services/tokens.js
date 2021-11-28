@@ -40,9 +40,10 @@ class TokensService {
   async checkToken(token) {
     try {
       if (token == this.retrieveToken()) {
+        console.log(this.retrieveToken());
         return true;
       } else {
-        throw Error('Incorrect authorization token');
+        return false;
       }
     } catch (err) {
       throw err;

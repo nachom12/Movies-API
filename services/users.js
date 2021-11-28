@@ -20,17 +20,19 @@ class UsersService {
 
   async newUser({ user }) {
     try {
-      const { name, username, password } = user;
+      const { username } = user;
       const users = await this.getUsers();
-      users.forEach(user => {
-        if (user.username === username) {
-          throw Error('That UserName has been taken');
-        }
-      });
-      users.push(user);
-      const usersText = JSON.stringify(users);
-      fs.truncateSync('users.txt');
-      fs.writeFileSync('users.txt', usersText);
+      const usernameTaken = (users.filter(user => user.username == username).length != 0);
+      if (!usernameTaken) {
+        users.push(user);
+        const usersText = JSON.stringify(users);
+        fs.truncateSync('users.txt');
+        fs.writeFileSync('users.txt', usersText);
+        return true;
+      } else {
+        return false;
+      }
+
     } catch (err) {
       throw err;
     }
@@ -46,12 +48,12 @@ class UsersService {
         if (user.password === registeredUser.password) {
           const token = this.tokensService.retrieveToken({ user });
           this.tokensService.updateUser({ user })
-          return { registeredUser, token };
+          return { token };
         } else {
-          throw Error('Incorrect password');
+          return false;
         }
       } else {
-        throw Error('User not registered')
+        return false;
       }
     } catch (err) {
       throw err;
@@ -59,7 +61,8 @@ class UsersService {
   }
 
   async logoutUser(token, user) {
-    if (this.tokensService.checkToken(token)) {
+    const tokenCheck = await this.tokensService.checkToken(token);
+    if (tokenCheck) {
       this.tokensService.updateToken();
       return true;
     } else {

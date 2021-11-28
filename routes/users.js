@@ -1,9 +1,11 @@
 const express = require('express');
 const UsersService = require('../services/users.js');
+const userErrorHandler = require('../middleware/userErrorHandler.js');
 
 function users(app) {
   const router = express.Router();
   app.use('/api/users', router);
+  app.use(userErrorHandler);
 
   const usersService = new UsersService();
 
@@ -17,45 +19,48 @@ function users(app) {
   router.post('/', async function (req, res, next) {
     const { user } = req.body
     try {
-      const data = await usersService.newUser({ user });
-      res.status(200).json({
-        res: data
+      const signUpResult = await usersService.newUser({ user });
+      if (!signUpResult) {
+        throw Error('That username has been taken');
+      }
+      res.status(201).json({
+        user
       });
     } catch (err) {
-      res.status(400).json({
-        error: `${err.message}`
-      });
+      next(err);
     }
   });
 
   router.post('/login', async function (req, res, next) {
     const { user } = req.body
     try {
-      const { registeredUser, token } = await usersService.authenticateUser({ user });
-      res.set('Authorization', token);
-      res.status(200).json({
-        message: `${registeredUser.name} is authenticated`
-      });
+      const { token } = await usersService.authenticateUser({ user });
+      if (token == null) {
+        throw Error('Incorrect login');
+      } else {
+        res.set('Authorization', token);
+        res.status(200).json({
+          message: `user authenticated`
+        });
+      }
     } catch (err) {
       next(err);
-      res.status(400).json({
-        error: `${err.message}`
-      });
     }
   });
 
   router.post('/logout', async function (req, res, next) {
     const { authorization } = req.headers
     try {
-      await usersService.logoutUser(authorization);
-      res.status(200).json({
-        message: `Log out success`
-      });
+      const logoutResult = await usersService.logoutUser(authorization);
+      if (logoutResult) {
+        res.status(200).json({
+          message: `Log out success`
+        });
+      } else {
+        throw Error('Incorrect authorization token');
+      }
     } catch (err) {
       next(err);
-      res.status(400).json({
-        error: `${err.message}`
-      })
     }
   });
 }

@@ -11,21 +11,6 @@ function movies(app) {
   const tokensService = new TokensService();
   const usersService = new UsersService();
 
-  // router.get('/:id', async function (req, res, next) {
-  //   const { id } = req.params;
-  //   try {
-  //     const movies = await moviesService.getMovie(id);
-  //     res.status(200).json({
-  //       movies
-  //     });
-  //   } catch (err) {
-  //     next(err);
-  //     res.status(400).json({
-  //       error: `${err.message}`
-  //     });
-  //   }
-  // });
-
   router.get('/', async function (req, res, next) {
     const { keyword } = req.query;
     try {
@@ -45,16 +30,17 @@ function movies(app) {
     const { movieId } = req.params;
     const { authorization } = req.headers;
     try {
-      await tokensService.checkToken(authorization);
-      const data = await usersService.addFavouriteMovie(movieId);
-      res.status(200).json({
-        data
-      });
+      const tokenCheck = await tokensService.checkToken(authorization);
+      if (tokenCheck) {
+        const data = await usersService.addFavouriteMovie(movieId);
+        res.status(200).json({
+          data
+        });
+      } else {
+        throw Error('Incorrect authorization token');
+      }
     } catch (err) {
       next(err);
-      res.status(400).json({
-        error: `${err.message}`
-      });
     }
   });
 
