@@ -13,16 +13,19 @@ function movies(app) {
 
   router.get('/', async function (req, res, next) {
     const { keyword } = req.query;
+    const { authorization } = req.headers;
     try {
-      const movies = await moviesService.getMoviesByKeyword(keyword);
-      res.status(200).json({
-        movies
-      });
+      const tokenCheck = await tokensService.checkToken(authorization);
+      if (tokenCheck) {
+        const movies = await moviesService.getMoviesByKeyword(keyword);
+        res.status(200).json({
+          movies
+        });
+      } else {
+        throw Error('Incorrect authorization token');
+      }
     } catch (err) {
       next(err);
-      res.status(400).json({
-        error: `${err.message}`
-      });
     }
   });
 
@@ -45,11 +48,17 @@ function movies(app) {
   });
 
   router.get('/favourites', async function (req, res, next) {
+    const { authorization } = req.headers;
     try {
-      const data = await usersService.getUsersFavourites();
-      res.status(200).json({
-        data
-      });
+      const tokenCheck = await tokensService.checkToken(authorization);
+      if (tokenCheck) {
+        const data = await usersService.getUsersFavourites();
+        res.status(200).json({
+          data
+        });
+      } else {
+        throw Error('Incorrect authorization token');
+      }
     } catch (err) {
       next(err);
     }
