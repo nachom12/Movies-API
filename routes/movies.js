@@ -2,10 +2,12 @@ const express = require('express');
 const MoviesService = require('../services/movies.js');
 const TokensService = require('../services/tokens.js');
 const UsersService = require('../services/users.js');
+const userErrorHandler = require('../middleware/userErrorHandler.js');
 
 function movies(app) {
   const router = express.Router();
   app.use('/api/movies', router);
+  app.use(userErrorHandler);
 
   const moviesService = new MoviesService();
   const tokensService = new TokensService();
@@ -54,7 +56,7 @@ function movies(app) {
       if (tokenCheck) {
         const data = await usersService.getUsersFavourites();
         res.status(200).json({
-          data
+          movies: data
         });
       } else {
         throw Error('Incorrect authorization token');

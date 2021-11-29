@@ -123,8 +123,8 @@ class UsersService {
     const favouritesTXT = fs.readFileSync('favourites.txt');
     const userFavourites = JSON.parse(favouritesTXT).filter(favouriteData => favouriteData.username == username);
     const userFavouriteMovies = userFavourites.map(favourite => {
-      favourite.suggestionForTodayScore = this.moviesService.calculateSuggestionScore();
-      const { movie, ...rest } = favourite;
+      favourite.movie.suggestionForTodayScore = this.moviesService.calculateSuggestionScore();
+      const { movie , ...rest } = favourite;
       return movie;
     });
     return userFavouriteMovies.sort((a, b) => b.suggestionForTodayScore - a.suggestionForTodayScore);
