@@ -1,5 +1,6 @@
 const express = require('express');
 const UsersService = require('../services/users.js');
+const { body, validationResult } = require('express-validator');
 const userErrorHandler = require('../middleware/userErrorHandler.js');
 
 function users(app) {
@@ -16,20 +17,28 @@ function users(app) {
     });
   });
 
-  router.post('/', async function (req, res, next) {
-    const { user } = req.body
-    try {
-      const signUpResult = await usersService.newUser({ user });
-      if (!signUpResult) {
-        throw Error('That username has been taken');
+  router.post('/', 
+    body('user.email').isEmail(),
+    body('user.password').isLength({ min: 5 }), 
+    async function (req, res, next) {
+      const errors = validationResult(req);
+      const { user } = req.body
+      try {
+        if (!errors.isEmpty()){
+          return next(errors);
+        }
+        const signUpResult = await usersService.newUser({ user });
+        if (!signUpResult) {
+          throw Error('That email has been taken');
+        }
+        res.status(201).json({
+          message: 'User created'
+        });
+      } catch (err) {
+        next(err);
       }
-      res.status(201).json({
-        user
-      });
-    } catch (err) {
-      next(err);
     }
-  });
+  );
 
   router.post('/login', async function (req, res, next) {
     const { user } = req.body

@@ -20,10 +20,10 @@ class UsersService {
 
   async newUser({ user }) {
     try {
-      const { username } = user;
+      const { email } = user;
       const users = await this.getUsers();
-      const usernameTaken = (users.filter(user => user.username == username).length != 0);
-      if (!usernameTaken) {
+      const emailTaken = (users.filter(user => user.email == email).length != 0);
+      if (!emailTaken) {
         users.push(user);
         const usersText = JSON.stringify(users);
         fs.truncateSync('users.txt');
@@ -42,7 +42,7 @@ class UsersService {
     try {
       const registeredUsers = await this.getUsers();
       const registeredUser = registeredUsers.find(registeredUser => {
-        return registeredUser.username === user.username
+        return registeredUser.email === user.email
       });
       if (registeredUser != null) {
         if (user.password === registeredUser.password) {
@@ -78,9 +78,9 @@ class UsersService {
 
   async addFavouriteMovie(movieId) {
     try {
-      const username = await this.getCurrentUser();
+      const email = await this.getCurrentUser();
       const movie = await this.moviesService.getMovie(movieId);
-      let favouriteData = { username, movie };
+      let favouriteData = { email, movie };
       const result = this.saveFavouriteMovie(favouriteData)
       return result;
     } catch (err) {
@@ -92,11 +92,11 @@ class UsersService {
     try {
       const favouritesTXT = fs.readFileSync('favourites.txt');
       const favourites = JSON.parse(favouritesTXT);
-      if (!this.isMovieAlreadyAFavourite(data.movie, data.username)) {
+      if (!this.isMovieAlreadyAFavourite(data.movie, data.email)) {
         favourites.push(data);
         const newFavouritesTXT = JSON.stringify(favourites);
         fs.truncateSync('favourites.txt');
-        fs.writeFileSyncSync('favourites.txt', newFavouritesTXT);
+        fs.writeFileSync('favourites.txt', newFavouritesTXT);
         return true;
       } else {
         return false;
@@ -107,10 +107,10 @@ class UsersService {
   }
 
 
-  isMovieAlreadyAFavourite(movie, username) {
+  isMovieAlreadyAFavourite(movie, email) {
     const favouritesTXT = fs.readFileSync('favourites.txt');
     const favourites = JSON.parse(favouritesTXT);
-    const userFavourites = favourites.filter(favouriteData => (favouriteData.username == username && favouriteData.movie.id == movie.id))
+    const userFavourites = favourites.filter(favouriteData => (favouriteData.email == email && favouriteData.movie.id == movie.id))
     if (!userFavourites.length) {
       return false;
     } else {
@@ -119,9 +119,9 @@ class UsersService {
   }
 
   async getUsersFavourites() {
-    const username = await this.getCurrentUser();
+    const email = await this.getCurrentUser();
     const favouritesTXT = fs.readFileSync('favourites.txt');
-    const userFavourites = JSON.parse(favouritesTXT).filter(favouriteData => favouriteData.username == username);
+    const userFavourites = JSON.parse(favouritesTXT).filter(favouriteData => favouriteData.email == email);
     const userFavouriteMovies = userFavourites.map(favourite => {
       favourite.movie.suggestionForTodayScore = this.moviesService.calculateSuggestionScore();
       const { movie , ...rest } = favourite;

@@ -20,7 +20,7 @@ class TokensService {
   updateUser({ user }) {
     let tokenTxt = fs.readFileSync('token.txt');
     let tokenObj = JSON.parse(tokenTxt);
-    tokenObj.currentUser = user.username;
+    tokenObj.currentUser = user.email;
     fs.truncateSync('token.txt');
     fs.writeFileSync('token.txt', JSON.stringify(tokenObj));
   }
@@ -30,7 +30,7 @@ class TokensService {
       const tokenData = fs.readFileSync('token.txt');
       let tokenDataObject = JSON.parse(tokenData);
       const stringToken = tokenDataObject.token.toString();
-      // tokenDataObject.currentUser = user.username;
+      // tokenDataObject.currentUser = user.email;
       return stringToken;
     } catch (err) {
       throw err;
