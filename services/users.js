@@ -2,6 +2,7 @@ const e = require('express');
 const fs = require('fs');
 const TokensService = require('../services/tokens.js');
 const MoviesService = require('./movies.js');
+var SHA256 = require("crypto-js/sha256");
 
 class UsersService {
   constructor() {
@@ -20,10 +21,12 @@ class UsersService {
 
   async newUser({ user }) {
     try {
-      const { email } = user;
+      let { email, firstName, lastName, password } = user;
       const users = await this.getUsers();
       const emailTaken = (users.filter(user => user.email == email).length != 0);
       if (!emailTaken) {
+        const encryptedPassword = SHA256(password);
+        user.password = encryptedPassword.toString();
         users.push(user);
         const usersText = JSON.stringify(users);
         fs.truncateSync('users.txt');
@@ -45,7 +48,7 @@ class UsersService {
         return registeredUser.email === user.email
       });
       if (registeredUser != null) {
-        if (user.password === registeredUser.password) {
+        if (SHA256(user.password).toString() === registeredUser.password) {
           const token = this.tokensService.retrieveToken({ user });
           this.tokensService.updateUser({ user })
           return { token };

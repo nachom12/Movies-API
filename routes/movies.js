@@ -37,9 +37,9 @@ function movies(app) {
     try {
       const tokenCheck = await tokensService.checkToken(authorization);
       if (tokenCheck) {
-        const data = await usersService.addFavouriteMovie(movieId);
-        res.status(200).json({
-          data
+        await usersService.addFavouriteMovie(movieId);
+        res.status(201).json({
+          message: `The movie ${movieId} was added to your favourites`
         });
       } else {
         throw Error('Incorrect authorization token');
